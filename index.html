@@ -4,7 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-        <title>Containers</title>
+        <title>Práce a dítě: Jak být k sobě laskavější</title>
 
         <link rel="stylesheet" href="revealjs/reset.css">
         <link rel="stylesheet" href="revealjs/reveal.css">
@@ -29,326 +29,237 @@
                     <textarea data-template>
 
                     <div style="text-align: center">
-                        <img src="img/microservices.webp">
+                        <img src="img/kind.webp">
                     </div>
                     ---
-                    # Containers
-
-                    - Like a VM? <!-- .element: class="fragment" -->
-                        - Filesystem <!-- .element: class="fragment" -->
-                        - Hostname <!-- .element: class="fragment" -->
-                        - Network <!-- .element: class="fragment" -->
-                        - Users <!-- .element: class="fragment" -->
-                        - Processes <!-- .element: class="fragment" -->
-                        - Clock (uptime) <!-- .element: class="fragment" -->
-                        - Limiting CPU, Memory, Net, ...<!-- .element: class="fragment" -->
-
-                    - Just a folder? <!-- .element: class="fragment" -->
-                    <aside class="notes">
-                        <pre><code>
-                        docker run -it --rm debian:11
-                        cat /etc/os-release
-                        hostname
-                        hostname -I
-                        whoami
-                        sleep infinity
-
-                        ps aux | grep infini
-
-                        docker ps --format '{{ .ID }}' | xargs docker inspect | jq -r '.[].GraphDriver.Data.LowerDir'
-                        </code></pre>
-                    </aside>
-                    ---
-
-                    ## Kernel vs Userspace
+                    ## Práce a dítě: Jak být k sobě laskavější
 
                     ---
+                    <div style="font-size: 100%;">
 
-                    ## Busybox
-
-                    ```sh
-                    sudo apt install busybox-static
+                    ```python
+                    $ whoami
+                    > Pricipal Scientist, Community Engagement v DNAnexus
+                    > Spoluzakladatelka sedlakovi.org
+                    > ....Kurzy pro firmy a jednotlivce
+                    > ........Programování 
+                    > ........Data science
+                    > ....Konzultace v bioinformatice a data science
+                    > Maminka 3 dětí: 5 let, 3 roky a 5 měsíců
                     ```
 
-                    ```sh
-                    mkdir -p minimal
+                    </div>
+                    ---
+                    ## Disclaimer 1
 
-                    cp `which busybox` minimal/
-
-                    sudo  chroot minimal/ /busybox sh
-                    ```
-
+                    Nevvím všechno. Vezměte z mého příběhu jen to, co se líbí vám.
                     ---
 
+                    ## Disclaimer 2
+                    <div style="text-align: center">
+                        <img src="img/wip.png" style="max-width: 30%;align-self: center;">
+                    </div>
+                    ---
+                    - Před dětmi <!-- .element: class="fragment" -->
+                        - Doktorát <!-- .element: class="fragment" -->
+                        - Začátky v Python a R <!-- .element: class="fragment" -->
+                        - Perfekcionismus <!-- .element: class="fragment" -->
+                    
+                    ---
 
                     <div style="text-align: center">
-                        <img src="img/docker_image.jpeg">
-
-
-                    </div>
-
-                    <p style="text-align: center">Container vs Image</p>
-
-                    ---
-
-                    ## Images
-
-                    ```shell
-                    tar -C minimal -c . -f minimal-image.tar
-
-                    docker import minimal-image.tar krabbusybox
-                    docker run --rm -it mybusybox /busybox sh
-                    ```
-
-                    #### + Metadata
-
-                    - Which program to run
-                    - Which architecture is it good for
-                    - ...
-
-                    ---
-
-                    ## How do containers work?
-
-                    - _System call_ `unshare`
-                        - `/usr/bin/unshare`
-                    - `pivot_root` (`chroot`)
-                    - Filesystem with snapshot support
-                        - btrfs, zfs
-                        - **overlay**
-                    - CGroups
-                        - `/sys/fs/cgroup/`
-
-                    ---
-
-                    ## Chroot
-
-                    Bootstrap your own debian:
-
-                    ```sh
-                    sudo debootstrap \
-                        --variant=minbase \
-                        stable my-debian \
-                        http://deb.debian.org/debian/
-
-                    sudo chown $UID:$GID my-debian -R
-
-                    sudo  chroot my-ubuntu bash
-                    ```
-                    ---
-
-                    ## Chroot
-
-                    Or Ubuntu:
-
-                    ```sh
-                    sudo debootstrap \
-                        --variant=minbase \
-                        jammy my-ubuntu \
-                        http://archive.ubuntu.com/ubuntu/
-
-                    sudo chown $UID:$GID my-ubuntu -R
-
-                    sudo chroot my-ubuntu bash
-                    ```
-
-                    ---
-                    ## Chroot
-
-                    Or a minimal distro:
-
-                    ```sh
-                    sudo apt install busybox-static
-                    ```
-
-                    ```sh
-                    mkdir -p minimal
-
-                    cp `which busybox` minimal/
-
-                    sudo  chroot minimal/ /busybox sh
-                    ```
-                    ---
-
-                    ## Look Ma!
-
-                    ### No Linux in my container!
-
-                    ```shell
-                    root@krab-monitora:/# ls -a /boot
-                    .  ..
-                    ```
-                    vs.
-                    ```shell
-                    $ ls -al /boot
-                    total 415412
-                    drwxr-xr-x  5 root root      4096 bře  8 10:03 .
-                    drwxr-xr-x 22 root root      4096 bře  1 12:44 ..
-                    -rw-r--r--  1 root root    261948 úno 22 15:01 config-5.15.0-67-generic
-                    -rw-r--r--  1 root root    269885 led 30 16:44 config-5.19.0-32-generic
-                    -rw-r--r--  1 root root    270020 úno 17 15:31 config-5.19.0-35-generic
-                    drwx------  3 root root      4096 led  1  1970 efi
-                    drwxr-xr-x  5 root root      4096 bře  6 09:16 grub
-                    lrwxrwxrwx  1 root root        28 bře  6 09:15 initrd.img -> initrd.img-5.15.0-67-generic
-                    -rw-r--r--  1 root root 115552485 bře  6 09:15 initrd.img-5.15.0-67-generic
-                    -rw-r--r--  1 root root 126552765 úno 27 10:55 initrd.img-5.19.0-32-generic
-                    -rw-r--r--  1 root root 126811238 bře  8 10:03 initrd.img-5.19.0-35-generic
-                    lrwxrwxrwx  1 root root        28 bře  6 09:15 initrd.img.old -> initrd.img-5.19.0-35-generic
-                    drwx------  2 root root     16384 lis 13  2021 lost+found
-                    -rw-r--r--  1 root root    182800 úno  6  2022 memtest86+.bin
-                    -rw-r--r--  1 root root    184476 úno  6  2022 memtest86+.elf
-                    -rw-r--r--  1 root root    184980 úno  6  2022 memtest86+_multiboot.bin
-                    -rw-------  1 root root   6254553 úno 22 15:01 System.map-5.15.0-67-generic
-                    -rw-------  1 root root   6429633 led 30 16:44 System.map-5.19.0-32-generic
-                    -rw-------  1 root root   6430111 úno 17 15:31 System.map-5.19.0-35-generic
-                    lrwxrwxrwx  1 root root        25 bře  6 09:15 vmlinuz -> vmlinuz-5.15.0-67-generic
-                    -rw-------  1 root root  11559080 úno 22 15:03 vmlinuz-5.15.0-67-generic
-                    -rw-------  1 root root  12186376 led 30 16:46 vmlinuz-5.19.0-32-generic
-                    -rw-------  1 root root  12187720 úno 17 15:33 vmlinuz-5.19.0-35-generic
-                    lrwxrwxrwx  1 root root        25 bře  6 09:15 vmlinuz.old -> vmlinuz-5.19.0-35-generic
-                    ```
-                    ---
-
-                    ## Unknown user?
-
-                    ```shell
-                    root@krab-monitora:/# ls -l /usr/bin/ls
-                    -rwxr-xr-x 1 1000 1000 138208 Feb  7  2022 /usr/bin/ls
-                    ```
-
-                    Tell it about a user:
-                    ```shell
-                    root@krab-monitora:/# echo krabiii:x:1000:1000:krabiii:/home:/usr/bin/bash \
-                        > /etc/passwd
-
-                    root@krab-monitora:/# ls /usr/bin/ls -l
-                    -rwxr-xr-x 1 krabiii 1000 138208 Feb  7  2022 /usr/bin/ls
-                    ```
-
-
-                    Remapping:
-                    ```shell
-                    $ unshare -r chroot my-ubuntu bash
-
-                    root@krab-monitora:/# ls -l /usr/bin/ls
-                    -rwxr-xr-x 1 root root 138208 Feb  7  2022 /usr/bin/ls
-                    ```
-                    ---
-
-                    ## Processes
-
-                    Try this (in minimal):
-                    ```shell
-                    # ps
-                    PID   USER     COMMAND
-                    ps: can't open '/proc': No such file or directory
-                    ```
-
-                    In Ubuntu:
-                    ```shell
-                    root@krab-monitora:/# ps
-                    Error, do this: mount -t proc proc /proc
-                    root@krab-monitora:/# ls -a /proc/
-                    .  ..
-                    ```
-
-                    <h2 style="text-align:center"> 😱 </h2>
-                    ---
-
-                    ## Can we be PID 1?
-
-                    ```shell
-                    $ sudo unshare --pid --mount-proc --fork
-                    root@krab-monitora:/home/krab/workspace/containers/work# ps
-                        PID TTY          TIME CMD
-                          1 pts/3    00:00:00 bash
-                         14 pts/3    00:00:00 ps
-                    ```
-
-                    PID + Chroot together:
-
-                    ```shell
-                    sudo unshare --pid --fork chroot my-ubuntu bash
-                    ```
-                    ---
-
-                    ## Networks
-
-
-                    Not going to cover them here. See [a tutorial](https://aly.arriqaaq.com/linux-networking-bridge-iptables-and-docker/).
-
-                    <div class="fragment">
-                    You'll need:
-
-                    - A network namespace
-                    - Virtual eth interface of type peer (a pair)
-                    - Move one peer into the namespace
-                    - (usually) A bridge interface to connect elsewhere (`docker0`)
+                        <img src="img/perfectionism.jpeg">
                     </div>
 
                     ---
 
-                    ## Networks
+                    - První mateřská <!-- .element: class="fragment" -->
+                        - Poporodní deprese <!-- .element: class="fragment" -->
+                        - Velké očekávání od sebe <!-- .element: class="fragment" -->
+                        - Snaha být jako většina  <!-- .element: class="fragment" -->
 
-                    The Docker way to tweak manually:
-
-                    ```sh
-                    CONTAINER=$(docker run ...)
-
-                    docker network create $NETWORK
-                    docker network connect $NETWORK $CONTAINER
-                    ```
                     ---
-
-                    ## Layers
-
-                    Optimization for big images
-
-                    - only changes
-
-                    We'll try using Overlay FS.
 
                     <div style="text-align: center">
-                        <img src="img/layers.jpg">
+                        <img src="img/depression.jpeg">
                     </div>
 
                     ---
 
-                    ## OverlayFS
-
-                    ```shell
-                    mkdir minimal-work minimal-changes minimal-merged
-
-                    sudo mount -t overlay overlay \
-                      -olowerdir=minimal,upperdir=minimal-changes,workdir=minimal-work \
-                      minimal-merged
-                    ```
-
-                    Lower dir = base image \
-                    Upper dir = stores our changes \
-                    Work dir = ¯\\_(ツ)_/¯
-
-                    We work in **`minimal-merged`**
-                    ---
-
-                    ## Layers chaining
-
-                    ```shell
-                    mkdir minimal-work2 minimal-changes2 minimal-merged2
-
-                    sudo mount -t overlay overlay \
-                      -olowerdir=minimal-merged,upperdir=minimal-changes2,workdir=minimal-work2 \
-                      minimal-merged2
-                    ```
-
-                    - `tar` layers together.
-                    - Add metadata to order them.
-                    - Voilà, multilayer Docker image
+                    - Druhá mateřská <!-- .element: class="fragment" -->
+                        - Poporodní deprese <!-- .element: class="fragment" -->
+                        - Covid <!-- .element: class="fragment" -->
+                        - Snaha být vnímáná jako "dobrá matka"  <!-- .element: class="fragment" -->
 
                     ---
 
-                    # KOHEU
+                    <div style="text-align: center">
+                        <img src="img/covid.jpeg">
+                    </div>
 
+                    ---
+                    - Třetí mateřská <!-- .element: class="fragment" -->
+                        - Únava <!-- .element: class="fragment" -->
+                        - Jasnější pochopení priorit <!-- .element: class="fragment" -->
+                        - Soucit k sobě <!-- .element: class="fragment" -->
+                    ---
+                    <div style="text-align: center">
+                        <img src="img/selfcompassion.jpeg">
+                    </div>
+                    ---
+
+                    - Z čeho čerpám energii <!-- .element: class="fragment" -->
+                        - Čas o samotě <!-- .element: class="fragment" -->
+                        - Pohyb <!-- .element: class="fragment" -->
+                        - Tvoření  <!-- .element: class="fragment" -->
+
+                    ---
+                    ## Otázka
+
+                    Z čeho čerpáte energii?
+                    
+                    ---
+                    ## Strategie zvládání stresu - copingové strategie
+                    
+                    - Zaměřené na problém <!-- .element: class="fragment" -->
+                    - Zaměřené na emoce <!-- .element: class="fragment" -->
+                    - Zaměřené na únik <!-- .element: class="fragment" -->
+                        - Závislost  <!-- .element: class="fragment" -->
+                        - Nadměrná agrese  <!-- .element: class="fragment" -->
+                        - Potlačení nebo popření <!-- .element: class="fragment" -->
+
+                    ---
+
+                    <div style="text-align: center;">
+                        <img src="img/coping_strategies.png" style="max-width: 80%;align-self: center;">
+                    </div>
+                    ---
+
+                    ## Otázka
+
+                    Jaké jsou vaše strategie zvládání stresu?
+                    ---
+
+                    ## Jak to mám já (ideální situace)
+                    - Dopředu dávám vědět, když nejsem OK <!-- .element: class="fragment" -->
+                    - Snažím se vést se sebou soucitný dialog  <!-- .element: class="fragment" -->
+                    - Dýchám 🧘 <!-- .element: class="fragment" -->
+                    - Psychoterapie <!-- .element: class="fragment" -->
+
+                    ---
+                    <div style="text-align: center;">
+                        <img src="img/mala_mama_odhaleni.jpeg" style="max-width: 60%;align-self: center;">
+                    </div>
+                    ---
+                    ## Plánování
+
+                    - Čas pro sebe <!-- .element: class="fragment" -->
+                    - Čas pro manžela <!-- .element: class="fragment" -->
+                    - Společný čas bez dětí <!-- .element: class="fragment" -->
+                    - Individuální čas pro starší dětí <!-- .element: class="fragment" -->
+                    
+                    ---
+
+                    ## Pohovor
+
+                    - Nehledám pozice, u kterých musí být pracovní pohotovost/neustálá dostupnost online <!-- .element: class="fragment" -->
+                    - Během pohovoru se snažím zjistit jaká je firemní kutura, ideálně jdu do firmy na doporučení někoho známého <!-- .element: class="fragment" -->
+                    - O částečném úvazku mluvím vždy až s potenciálním vedoucím <!-- .element: class="fragment" -->
+                    - [Způsoby jak vtipně napsat mateřskou do životopisu](https://cafemom.com/lifestyle/115171-40_funny_ways_to_say) <!-- .element: class="fragment" -->
+                        - Můj favorit: Sleep Scientist (work mostly night shifts) <!-- .element: class="fragment" -->
+                    ---
+
+                    ## V práci
+
+                    - Nepoužívám pracovní notebook k osobním věcem <!-- .element: class="fragment" -->
+                    - Na svůj osobní telefon sdílím jen pracovní kalendař <!-- .element: class="fragment" -->
+                        - Pracovní google chat vidím jen na pracovním mobilu/notebooku <!-- .element: class="fragment" -->
+                    -  V kalendáří mám označený konec pracovní doby večer jako out of office / family time <!-- .element: class="fragment" -->
+                    - Jeden den v týdnu mám celodenní událost  Focus time &mdash; no meetings <!-- .element: class="fragment" -->
+                    - Když mám pracovní cesty, vybírám náhradní volno <!-- .element: class="fragment" -->
+                    
+                    ---
+                    ## Práce z domova
+
+                    <div style="text-align: center;">
+                        <img src="img/zoom_meme.webp" style="max-width: 40%;align-self: center;">
+                    </div>
+                    ---
+                    ## Viditelnost v práci
+
+                    - Seznam svých úspěchů
+                    ---
+
+                    ## Můj typický pracovní den
+
+                    <table class="tg" style="font-size: 50%;">
+                        <thead>
+                          <tr>
+                            <td class="tg-nuol">6:30 - 7:00</th>
+                            <td class="tg-pvk6">Vstávám </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr>
+                            <td class="tg-pvk6">7:00 - 8:30<br></td>
+                            <td class="tg-pvk6"> Společně s manželem chystáme děti do školky</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">8:30</td>
+                            <td class="tg-pvk6"> Chůva odchází se všemi dětmi do školky</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">8:30 - 10:00 </td>
+                            <td class="tg-pvk6"> Fitness nebo práce na vedlejších projektech</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">10:00 - 18:00  </td>
+                            <td class="tg-pvk6"> Práce pro DNAnexus (včetně několika přestávek na kojení)</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">18:00 </td>
+                            <td class="tg-pvk6"> Chůva přivádí děti ze školky</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">18:00 - 19:00 </td>
+                            <td class="tg-pvk6"> Společná večeře</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">19:00 - 21:00</td>
+                            <td class="tg-pvk6"> Společně s manželem chystáme děti na spaní</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">21:00 - 22:00 </td>
+                            <td class="tg-pvk6"> Čas pro sebe nebo s manželem nebo práce na vedlejších projektech</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">22:00 - 22:30</td>
+                            <td class="tg-pvk6"> Chystám se na spaní</td>
+                          </tr>
+                          <tr>
+                            <td class="tg-pvk6">22:30</td>
+                            <td class="tg-pvk6"> Spím (nebo se o to alespoň snažím 🙃)</td>
+                          </tr>
+                        </tbody>
+                        </table>
+                    ---
+                    <div style="text-align: center">
+                    Dobrá Maminka
+                    <hr>
+                    <p style="text-align: center">Má špatné dny + skvělé dny</p>
+                    <p style="text-align: center">+ normální dny + vyčerpávající dny</p>
+                    <p style="text-align: center">+ naplánované dny + nestíhací dny </p>
+                    <p style="text-align: center">+ perfektní dny + já to nedám dny</p>
+                    <p style="text-align: center">+ super matka dny + šílené dny</p>
+                    </div>
+
+                    ---
+
+                    ## Děkuji za váš čas
+
+                    <div style="text-align: center">
+                        <img src="img/support.avif" style="max-width: 30%;align-self: center;">
+                    </div>
                     </textarea>
                 </section>
             </div>
@@ -364,7 +275,8 @@
             // - https://revealjs.com/config/
             Reveal.initialize({
                 hash: true,
-
+                width: 1024,
+                height: 576,
                 // Learn about plugins: https://revealjs.com/plugins/
                 plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
             });
